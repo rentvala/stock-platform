@@ -1,0 +1,44 @@
+<%- include('partials/header') %>
+<div class="page-header">
+  <h1>🎮 Paper Trading</h1>
+  <form method="POST" action="/paper-trade/evaluate" style="display:inline">
+    <button type="submit" class="btn-primary">🔄 Evaluate All Open Trades</button>
+  </form>
+</div>
+
+<!-- Stats -->
+<section class="stats-row">
+  <div class="stat-card"><span class="stat-label">Total</span><span class="stat-value"><%= stats.total || 0 %></span></div>
+  <div class="stat-card"><span class="stat-label">Open</span><span class="stat-value"><%= stats.open || 0 %></span></div>
+  <div class="stat-card"><span class="stat-label">Wins</span><span class="stat-value up"><%= stats.wins || 0 %></span></div>
+  <div class="stat-card"><span class="stat-label">Losses</span><span class="stat-value down"><%= stats.losses || 0 %></span></div>
+  <div class="stat-card"><span class="stat-label">Win Rate</span><span class="stat-value <%= parseFloat(stats.winRate || 0) >= 50 ? 'up' : 'down' %>"><%= stats.winRate || '0.0' %>%</span></div>
+  <div class="stat-card"><span class="stat-label">Total P&L</span><span class="stat-value <%= (stats.totalPnl || 0) >= 0 ? 'up' : 'down' %>">₹<%= (stats.totalPnl || 0).toLocaleString('en-IN', {maximumFractionDigits:0}) %></span></div>
+</section>
+
+<section class="section">
+  <h2>Trade Log</h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Ticker</th><th>Style</th><th>Side</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Outcome</th><th>Reason</th><th>Opened</th></tr>
+      </thead>
+      <tbody>
+        <% trades.forEach(t => { %>
+        <tr>
+          <td><a href="/market/stock/<%= t.ticker %>"><%= t.ticker %></a></td>
+          <td><%= t.style || '—' %></td>
+          <td><span class="side-badge <%= t.side === 'BUY' ? 'buy' : 'sell' %>"><%= t.side %></span></td>
+          <td>₹<%= (t.entry_price || 0).toLocaleString('en-IN', {maximumFractionDigits:2}) %></td>
+          <td><%= t.exit_price ? '₹' + t.exit_price.toLocaleString('en-IN', {maximumFractionDigits:2}) : '—' %></td>
+          <td class="<%= (t.pnl || 0) >= 0 ? 'up' : 'down' %>"><%= t.pnl !== null && t.pnl !== undefined ? '₹' + parseFloat(t.pnl).toLocaleString('en-IN', {maximumFractionDigits:0}) : '—' %></td>
+          <td><span class="status-badge <%= (t.outcome || 'open').toLowerCase() %>"><%= t.outcome || 'OPEN' %></span></td>
+          <td><%= t.reason || '—' %></td>
+          <td><%= t.opened_at ? new Date(t.opened_at).toLocaleDateString() : '—' %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<%- include('partials/footer') %>

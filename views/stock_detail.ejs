@@ -1,0 +1,77 @@
+<%- include('partials/header') %>
+<div class="page-header">
+  <h1>📊 <%= ticker %> — <% if (typeof quote !== 'undefined' && quote.name) { %><%= quote.name %><% } %></h1>
+  <div class="period-tabs">
+    <% ['1mo','3mo','6mo','1y','2y'].forEach(p => { %>
+      <a href="/market/stock/<%= ticker %>?period=<%= p %>" class="<%= (typeof period !== 'undefined' && period === p) ? 'active' : '' %>"><%= p %></a>
+    <% }); %>
+  </div>
+</div>
+
+<!-- Price Summary -->
+<section class="stats-row">
+  <div class="stat-card"><span class="stat-label">Price</span><span class="stat-value"><%= quote && quote.price ? '₹' + quote.price.toLocaleString('en-IN',{maximumFractionDigits:2}) : '—' %></span></div>
+  <div class="stat-card"><span class="stat-label">RSI(14)</span><span class="stat-value <%= (indicators.rsi || 50) < 35 ? 'up' : (indicators.rsi || 50) > 70 ? 'down' : '' %>"><%= indicators.rsi ? indicators.rsi.toFixed(1) : '—' %></span></div>
+  <div class="stat-card"><span class="stat-label">ADX</span><span class="stat-value"><%= indicators.adx ? indicators.adx.toFixed(1) : '—' %></span></div>
+  <div class="stat-card"><span class="stat-label">ATR</span><span class="stat-value"><%= indicators.atr ? indicators.atr.toFixed(2) : '—' %></span></div>
+  <div class="stat-card"><span class="stat-label">MACD Hist</span><span class="stat-value <%= (indicators.macd_hist || 0) > 0 ? 'up' : 'down' %>"><%= indicators.macd_hist ? indicators.macd_hist.toFixed(3) : '—' %></span></div>
+</section>
+
+<!-- Candlestick Chart using lightweight-charts -->
+<% if (df && df.length > 0) { %>
+<section class="section">
+  <h2>Price Chart</h2>
+  <div id="candleChart" style="height:400px;width:100%"></div>
+  <script>
+    const chartData = <%- JSON.stringify(df) %>;
+    const chart = LightweightCharts.createChart(document.getElementById('candleChart'), {
+      layout: { background: { color: 'transparent' }, textColor: '#333' },
+      grid: { vertLines: { color: '#eee' }, horzLines: { color: '#eee' } },
+      width: document.getElementById('candleChart').offsetWidth,
+      height: 400,
+    });
+    const series = chart.addCandlestickSeries({
+      upColor: '#22c55e', downColor: '#ef4444',
+      borderUpColor: '#22c55e', borderDownColor: '#ef4444',
+      wickUpColor: '#22c55e', wickDownColor: '#ef4444',
+    });
+    series.setData(chartData.map(d => ({
+      time: d.date, open: d.open, high: d.high, low: d.low, close: d.close
+    })).filter(d => d.open && d.high && d.low && d.close));
+    chart.timeScale().fitContent();
+    window.addEventListener('resize', () => chart.applyOptions({ width: document.getElementById('candleChart').offsetWidth }));
+  </script>
+</section>
+<% } %>
+
+<!-- Patterns -->
+<% if (patterns && patterns.length > 0) { %>
+<section class="section">
+  <h2>🕯️ Detected Patterns</h2>
+  <div class="tag-list">
+    <% patterns.forEach(p => { %><span class="tag"><%= p %></span><% }); %>
+  </div>
+</section>
+<% } %>
+
+<!-- Analysis Result (if coming from recommendations) -->
+<% if (typeof rec !== 'undefined' && rec) { %>
+<section class="section">
+  <h2>📋 Analysis Result</h2>
+  <div class="rec-card">
+    <div class="rec-header">
+      <span class="side-badge <%= rec.side === 'BUY' ? 'buy' : 'sell' %>"><%= rec.side %></span>
+      <span class="style-badge"><%= rec.style %></span>
+      <span class="prob-badge">Win Prob: <%= rec.win_probability %>%</span>
+    </div>
+    <div class="rec-levels">
+      <div><label>Entry</label><strong>₹<%= rec.entry %></strong></div>
+      <div><label>Target 1</label><strong class="up">₹<%= rec.target1 %></strong></div>
+      <div><label>Target 2</label><strong class="up">₹<%= rec.target2 %></strong></div>
+      <div><label>Stop Loss</label><strong class="down">₹<%= rec.stop_loss %></strong></div>
+      <div><label>R:R</label><strong><%= rec.rr %></strong></div>
+    </div>
+  </div>
+</section>
+<% } %>
+<%- include('partials/footer') %>

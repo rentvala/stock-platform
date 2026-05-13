@@ -1,0 +1,71 @@
+<%- include('partials/header') %>
+<div class="page-header">
+  <h1>🔍 Watchlist</h1>
+</div>
+
+<!-- Add Form -->
+<div class="watchlist-add-form">
+  <form method="POST" action="/watchlist/add" style="display:contents">
+    <input type="text" name="ticker" placeholder="Ticker symbol (e.g. RELIANCE.NS, AAPL)" required style="min-width:200px" />
+    <select name="market">
+      <option value="NSE">🇮🇳 NSE (India)</option>
+      <option value="US">🇺🇸 US (NASDAQ/NYSE)</option>
+      <option value="MCX">🪙 MCX (Commodities)</option>
+      <option value="CRYPTO">₿ Crypto</option>
+    </select>
+    <button type="submit" class="btn-primary">+ Add to Watchlist</button>
+  </form>
+</div>
+
+<% if (watchlist.length === 0) { %>
+  <p class="empty-msg">Your watchlist is empty. Add some tickers above to get started.</p>
+<% } else { %>
+<section class="section">
+  <h2>Your Tickers (<%= watchlist.length %>)</h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Market</th>
+          <th>Added</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% watchlist.forEach(item => { %>
+        <tr>
+          <td><strong><a href="/market/stock/<%= item.ticker %>"><%= item.ticker %></a></strong></td>
+          <td><span class="badge"><%= item.market || 'NSE' %></span></td>
+          <td><%= item.added_at ? new Date(item.added_at).toLocaleDateString() : '—' %></td>
+          <td>
+            <a href="/market/stock/<%= item.ticker %>" class="btn-sm">📈 Chart</a>
+            <a href="/recommendations/analyze/<%= item.ticker %>" class="btn-sm btn-green">🎯 Analyze</a>
+            <form method="POST" action="/watchlist/remove" style="display:inline">
+              <input type="hidden" name="ticker" value="<%= item.ticker %>">
+              <button type="submit" class="btn-sm btn-danger" onclick="return confirm('Remove <%= item.ticker %> from watchlist?')">🗑 Remove</button>
+            </form>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<% } %>
+
+<!-- Quick add from defaults -->
+<section class="section">
+  <h2>📌 Quick Add — Popular Tickers</h2>
+  <div class="tag-list">
+    <% const popular = ['RELIANCE.NS','TCS.NS','INFY.NS','HDFCBANK.NS','SBIN.NS','ICICIBANK.NS','AAPL','MSFT','GOOGL','NVDA','BTC-USD','ETH-USD']; %>
+    <% popular.forEach(t => { %>
+    <form method="POST" action="/watchlist/add" style="display:inline">
+      <input type="hidden" name="ticker" value="<%= t %>">
+      <input type="hidden" name="market" value="<%= t.endsWith('.NS') ? 'NSE' : t.includes('-USD') ? 'CRYPTO' : 'US' %>">
+      <button type="submit" class="tag" style="cursor:pointer;background:var(--bg-2);border:1px solid var(--border)">+ <%= t %></button>
+    </form>
+    <% }); %>
+  </div>
+</section>
+<%- include('partials/footer') %>

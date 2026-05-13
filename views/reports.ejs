@@ -1,0 +1,46 @@
+<%- include('partials/header') %>
+<div class="page-header"><h1>📑 Reports</h1></div>
+
+<section class="section">
+  <h2>Download Reports</h2>
+  <div class="report-download-grid">
+    <div class="report-card">
+      <h3>Recommendations</h3>
+      <p><%= recs.length %> records</p>
+      <a href="/reports/csv/recommendations" class="btn-primary">📥 CSV</a>
+      <a href="/reports/pdf/recommendations" class="btn-secondary">📄 PDF</a>
+    </div>
+    <div class="report-card">
+      <h3>Paper Trades</h3>
+      <p><%= trades.length %> records</p>
+      <a href="/reports/csv/trades" class="btn-primary">📥 CSV</a>
+      <a href="/reports/pdf/trades" class="btn-secondary">📄 PDF</a>
+    </div>
+    <div class="report-card">
+      <h3>Audit Log</h3>
+      <p><%= auditLog.length %> entries</p>
+      <a href="/reports/csv/audit" class="btn-primary">📥 CSV</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Recent Audit Log</h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Time</th><th>Action</th><th>Ticker</th><th>Outcome</th><th>Details</th></tr></thead>
+      <tbody>
+        <% auditLog.slice(0,20).forEach(entry => { %>
+        <tr>
+          <td><%= entry.created_at ? new Date(entry.created_at).toLocaleString() : '—' %></td>
+          <td><code><%= entry.action %></code></td>
+          <td><%= entry.ticker || '—' %></td>
+          <td><span class="status-badge <%= (entry.outcome || '').toLowerCase() %>"><%= entry.outcome || '—' %></span></td>
+          <td><%= entry.pnl ? '₹' + entry.pnl : entry.reason || '—' %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<%- include('partials/footer') %>

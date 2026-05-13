@@ -1,0 +1,72 @@
+<%- include('partials/header') %>
+<div class="page-header"><h1>🔔 Price Alerts</h1></div>
+
+<section class="section">
+  <h2>Create Alert</h2>
+  <form method="POST" action="/alerts/create" class="inline-form">
+    <input type="text" name="ticker" placeholder="Ticker (e.g. RELIANCE.NS)" required />
+    <select name="alert_type">
+      <option value="ABOVE">Price Above</option>
+      <option value="BELOW">Price Below</option>
+    </select>
+    <input type="number" name="threshold" placeholder="Threshold price" step="0.01" required />
+    <input type="text" name="note" placeholder="Note (optional)" />
+    <button type="submit" class="btn-primary">+ Create Alert</button>
+  </form>
+</section>
+
+<section class="section">
+  <h2>Active Alerts</h2>
+  <% const active = alerts.filter(a => a.active); %>
+  <% if (active.length === 0) { %>
+    <p class="empty-msg">No active alerts.</p>
+  <% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Ticker</th><th>Type</th><th>Threshold</th><th>Note</th><th>Created</th><th>Action</th></tr></thead>
+      <tbody>
+        <% active.forEach(a => { %>
+        <tr>
+          <td><strong><%= a.ticker %></strong></td>
+          <td><span class="badge <%= a.alert_type === 'ABOVE' ? 'up' : 'down' %>"><%= a.alert_type %></span></td>
+          <td>₹<%= a.threshold %></td>
+          <td><%= a.note || '—' %></td>
+          <td><%= a.created_at ? new Date(a.created_at).toLocaleDateString() : '—' %></td>
+          <td>
+            <form method="POST" action="/alerts/delete" style="display:inline">
+              <input type="hidden" name="alert_id" value="<%= a.id %>">
+              <button type="submit" class="btn-sm btn-danger" onclick="return confirm('Delete alert?')">Delete</button>
+            </form>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</section>
+
+<section class="section">
+  <h2>Fired Alerts</h2>
+  <% const fired = alerts.filter(a => !a.active); %>
+  <% if (fired.length === 0) { %>
+    <p class="empty-msg">No fired alerts yet.</p>
+  <% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Ticker</th><th>Type</th><th>Threshold</th><th>Fired At</th></tr></thead>
+      <tbody>
+        <% fired.forEach(a => { %>
+        <tr>
+          <td><%= a.ticker %></td>
+          <td><%= a.alert_type %></td>
+          <td>₹<%= a.threshold %></td>
+          <td><%= a.fired_at ? new Date(a.fired_at).toLocaleString() : '—' %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</section>
+<%- include('partials/footer') %>

@@ -1,0 +1,48 @@
+<%- include('partials/header') %>
+<div class="page-header">
+  <h1>🎯 Best Picks — <%= market %></h1>
+  <div class="btn-group">
+    <a href="/recommendations/best-picks?market=NSE" class="btn-primary">🇮🇳 NSE</a>
+    <a href="/recommendations/best-picks?market=US" class="btn-primary">🇺🇸 US</a>
+    <a href="/recommendations/best-picks?market=CRYPTO" class="btn-primary">₿ Crypto</a>
+  </div>
+</div>
+
+<% if (recs.length === 0) { %>
+  <div class="alert-box">No strong signals found at this time. Markets may be ranging. Try again after market hours or try a different market.</div>
+<% } else { %>
+<div class="picks-grid">
+  <% recs.forEach(rec => { %>
+  <div class="pick-card <%= rec.side === 'BUY' ? 'buy-card' : 'sell-card' %>">
+    <div class="pick-header">
+      <h3><a href="/market/stock/<%= rec.ticker %>"><%= rec.ticker %></a></h3>
+      <span class="side-badge <%= rec.side === 'BUY' ? 'buy' : 'sell' %>"><%= rec.side %></span>
+      <span class="style-badge"><%= rec.style %></span>
+    </div>
+    <div class="pick-name"><%= rec.name || '' %></div>
+    <div class="pick-prob">
+      <label>Win Probability</label>
+      <div class="prob-bar-lg">
+        <div class="prob-fill" style="width:<%= rec.win_probability %>%"></div>
+      </div>
+      <span class="prob-label"><%= rec.win_probability %>%</span>
+    </div>
+    <div class="pick-levels">
+      <div class="level-row"><span>Entry</span><strong>₹<%= rec.entry %></strong></div>
+      <div class="level-row up"><span>Target 1</span><strong>₹<%= rec.target1 %></strong></div>
+      <div class="level-row up"><span>Target 2</span><strong>₹<%= rec.target2 %></strong></div>
+      <div class="level-row down"><span>Stop Loss</span><strong>₹<%= rec.stop_loss %></strong></div>
+      <div class="level-row"><span>Risk:Reward</span><strong>1:<%= rec.rr %></strong></div>
+    </div>
+    <% if (rec.patterns) { %>
+    <div class="pick-patterns">
+      <% rec.patterns.split(',').filter(Boolean).forEach(p => { %><span class="tag"><%= p.trim() %></span><% }); %>
+    </div>
+    <% } %>
+    <div class="pick-score">Signal Score: <strong><%= rec.score %></strong></div>
+    <a href="/market/stock/<%= rec.ticker %>" class="btn-primary btn-full" style="margin-top:8px">View Chart</a>
+  </div>
+  <% }); %>
+</div>
+<% } %>
+<%- include('partials/footer') %>

@@ -1,0 +1,80 @@
+<%- include('partials/header') %>
+<div class="page-header"><h1>📰 Media & Sentiment</h1></div>
+
+<!-- Leaderboard -->
+<section class="section">
+  <h2>🏆 Media Leaderboard</h2>
+  <div class="leaderboard-grid">
+    <div class="lb-col">
+      <h3 class="up">📈 Top BUY Signals</h3>
+      <% if (!leaderboard.buys || leaderboard.buys.length === 0) { %>
+        <p class="empty-msg">Not enough data.</p>
+      <% } else { %>
+        <% leaderboard.buys.forEach((item, i) => { %>
+        <div class="lb-item">
+          <span class="lb-rank">#<%= i+1 %></span>
+          <span class="lb-ticker"><%= item.ticker %></span>
+          <span class="lb-stats up"><%= item.pos %> pos / <%= item.mentions %> mentions</span>
+        </div>
+        <% }); %>
+      <% } %>
+    </div>
+    <div class="lb-col">
+      <h3 class="down">📉 Top SELL Signals</h3>
+      <% if (!leaderboard.sells || leaderboard.sells.length === 0) { %>
+        <p class="empty-msg">Not enough data.</p>
+      <% } else { %>
+        <% leaderboard.sells.forEach((item, i) => { %>
+        <div class="lb-item">
+          <span class="lb-rank">#<%= i+1 %></span>
+          <span class="lb-ticker"><%= item.ticker %></span>
+          <span class="lb-stats down"><%= item.neg %> neg / <%= item.mentions %> mentions</span>
+        </div>
+        <% }); %>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<!-- News Feeds -->
+<section class="section">
+  <h2>📡 News Feeds</h2>
+  <div class="news-tabs">
+    <% let firstNews = true; %>
+    <% for (const [label, items] of Object.entries(news)) { %>
+    <details <%= firstNews ? 'open' : '' %>>
+      <summary><%= label %> (<%= items.length %> headlines)</summary>
+      <ul class="news-list">
+        <% items.slice(0, 10).forEach(item => { %>
+        <li class="news-item sentiment-<%= item.sentiment %>">
+          <span class="sentiment-dot"></span>
+          <a href="<%= item.link %>" target="_blank" rel="noopener"><%= item.title %></a>
+          <span class="news-time"><%= item.pub ? new Date(item.pub).toLocaleDateString() : '' %></span>
+        </li>
+        <% }); %>
+      </ul>
+    </details>
+    <% firstNews = false; %>
+    <% } %>
+  </div>
+</section>
+
+<!-- Social -->
+<section class="section">
+  <h2>💬 Social (Reddit)</h2>
+  <% for (const [label, posts] of Object.entries(social)) { %>
+  <details>
+    <summary><%= label %> (<%= posts.length %> posts)</summary>
+    <ul class="news-list">
+      <% posts.slice(0,10).forEach(p => { %>
+      <li class="news-item sentiment-<%= p.sentiment %>">
+        <span class="sentiment-dot"></span>
+        <a href="<%= p.link %>" target="_blank" rel="noopener"><%= p.title %></a>
+        <span class="news-ups">⬆ <%= p.ups %></span>
+      </li>
+      <% }); %>
+    </ul>
+  </details>
+  <% } %>
+</section>
+<%- include('partials/footer') %>

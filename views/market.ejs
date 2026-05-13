@@ -1,0 +1,76 @@
+<%- include('partials/header') %>
+<div class="page-header">
+  <h1>📈 Market — <%= market %></h1>
+  <div class="market-tabs">
+    <a href="/market?market=NSE" class="<%= market === 'NSE' ? 'active' : '' %>">🇮🇳 NSE</a>
+    <a href="/market?market=US" class="<%= market === 'US' ? 'active' : '' %>">🇺🇸 US</a>
+    <a href="/market?market=MCX" class="<%= market === 'MCX' ? 'active' : '' %>">🪙 MCX</a>
+    <a href="/market?market=CRYPTO" class="<%= market === 'CRYPTO' ? 'active' : '' %>">₿ Crypto</a>
+  </div>
+</div>
+
+<!-- Indices Bar -->
+<section class="indices-bar">
+  <% for (const [name, data] of Object.entries(indices)) { %>
+    <div class="index-card <%= (data.change_pct || 0) > 0 ? 'up' : 'down' %>">
+      <span class="idx-name"><%= name %></span>
+      <span class="idx-price"><%= data.price ? data.price.toLocaleString('en-IN', {maximumFractionDigits:2}) : 'N/A' %></span>
+      <span class="idx-chg"><%= data.change_pct ? ((data.change_pct > 0 ? '▲' : '▼') + Math.abs(data.change_pct).toFixed(2) + '%') : '' %></span>
+    </div>
+  <% } %>
+</section>
+
+<% if (market === 'CRYPTO' && crypto.length > 0) { %>
+<section class="section">
+  <h2>₿ Crypto Market</h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>#</th><th>Coin</th><th>Price (USD)</th><th>24h %</th><th>Market Cap</th><th>Volume 24h</th></tr></thead>
+      <tbody>
+        <% crypto.forEach((c, i) => { %>
+        <tr>
+          <td><%= i+1 %></td>
+          <td><img src="<%= c.image %>" width="20" style="vertical-align:middle"> <%= c.name %> (<%= c.symbol.toUpperCase() %>)</td>
+          <td>$<%= c.current_price.toLocaleString() %></td>
+          <td class="<%= (c.price_change_percentage_24h || 0) >= 0 ? 'up' : 'down' %>">
+            <%= c.price_change_percentage_24h ? c.price_change_percentage_24h.toFixed(2) + '%' : '—' %>
+          </td>
+          <td>$<%= c.market_cap ? (c.market_cap/1e9).toFixed(2) + 'B' : '—' %></td>
+          <td>$<%= c.total_volume ? (c.total_volume/1e6).toFixed(0) + 'M' : '—' %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<% } else { %>
+<section class="section">
+  <h2>Stocks — <%= market %></h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Ticker</th><th>Name</th><th>Price</th><th>Change %</th><th>Volume</th><th>52W H/L</th><th>Action</th></tr></thead>
+      <tbody>
+        <% tickers.forEach(ticker => {
+           const q = quotes[ticker] || {};
+        %>
+        <tr>
+          <td><strong><%= ticker %></strong></td>
+          <td><%= q.name || ticker %></td>
+          <td><%= q.price ? q.price.toLocaleString('en-IN', {maximumFractionDigits:2}) : '—' %></td>
+          <td class="<%= (q.change_pct || 0) >= 0 ? 'up' : 'down' %>">
+            <%= q.change_pct ? (q.change_pct > 0 ? '▲' : '▼') + Math.abs(q.change_pct).toFixed(2) + '%' : '—' %>
+          </td>
+          <td><%= q.volume ? q.volume.toLocaleString() : '—' %></td>
+          <td><%= q.week_52_high || '—' %> / <%= q.week_52_low || '—' %></td>
+          <td>
+            <a href="/market/stock/<%= ticker %>" class="btn-sm">Chart</a>
+            <a href="/recommendations/analyze/<%= ticker %>" class="btn-sm btn-green">Analyze</a>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<% } %>
+<%- include('partials/footer') %>

@@ -1,0 +1,43 @@
+<%- include('partials/header') %>
+<div class="page-header"><h1>🧠 Self Audit — ML Learning Log</h1></div>
+
+<section class="section">
+  <p>This page shows how the ML engine learns from every closed trade. Each row represents one learning event.</p>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Time</th><th>Action</th><th>Ticker</th><th>Outcome</th><th>Trades Trained</th><th>Details</th></tr></thead>
+      <tbody>
+        <% log.forEach(entry => { %>
+        <tr>
+          <td><%= entry.created_at ? new Date(entry.created_at).toLocaleString() : '—' %></td>
+          <td><code><%= entry.action %></code></td>
+          <td><%= entry.ticker || '—' %></td>
+          <td><span class="status-badge <%= (entry.outcome || '').toLowerCase() %>"><%= entry.outcome || '—' %></span></td>
+          <td><%= entry.n_trained || '—' %></td>
+          <td><%= entry.reason || entry.pnl ? '₹' + entry.pnl : '—' %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <h2>📊 Current ML Indicator Weights</h2>
+  <div id="weightsTable">Loading...</div>
+</section>
+
+<script>
+fetch('/api/ml-weights').then(r => r.json()).then(weights => {
+  let html = '<table class="data-table"><thead><tr><th>Indicator</th><th>Weight</th><th>Bar</th></tr></thead><tbody>';
+  const max = Math.max(...Object.values(weights));
+  for (const [ind, w] of Object.entries(weights)) {
+    const pct = Math.round((w / max) * 100);
+    html += `<tr><td>${ind}</td><td>${parseFloat(w).toFixed(3)}</td>
+      <td><div style="background:#0b5fff;height:12px;width:${pct}%;border-radius:4px"></div></td></tr>`;
+  }
+  html += '</tbody></table>';
+  document.getElementById('weightsTable').innerHTML = html;
+});
+</script>
+<%- include('partials/footer') %>

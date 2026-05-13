@@ -1,0 +1,95 @@
+<%- include('partials/header') %>
+<div class="page-header">
+  <h1>📊 Dashboard</h1>
+  <span class="refresh-hint">Auto-refresh every <%= Math.floor(refresh_interval/60000) %> min</span>
+</div>
+
+<!-- Indices Bar -->
+<section class="indices-bar">
+  <% for (const [name, data] of Object.entries(indices)) { %>
+    <div class="index-card <%= data.change_pct > 0 ? 'up' : data.change_pct < 0 ? 'down' : '' %>">
+      <span class="idx-name"><%= name %></span>
+      <span class="idx-price"><%= data.price ? data.price.toLocaleString('en-IN', {maximumFractionDigits:2}) : 'N/A' %></span>
+      <span class="idx-chg"><%= data.change_pct ? (data.change_pct > 0 ? '▲' : '▼') + Math.abs(data.change_pct).toFixed(2) + '%' : '' %></span>
+    </div>
+  <% } %>
+</section>
+
+<!-- Paper Trade Stats -->
+<section class="stats-row">
+  <div class="stat-card">
+    <span class="stat-label">Total Trades</span>
+    <span class="stat-value"><%= paperStats.total || 0 %></span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Open</span>
+    <span class="stat-value"><%= paperStats.open || 0 %></span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Win Rate</span>
+    <span class="stat-value <%= parseFloat(paperStats.winRate) >= 50 ? 'up' : 'down' %>"><%= paperStats.winRate || '0.0' %>%</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Total P&L</span>
+    <span class="stat-value <%= (paperStats.totalPnl || 0) >= 0 ? 'up' : 'down' %>">₹<%= (paperStats.totalPnl || 0).toLocaleString('en-IN', {maximumFractionDigits:0}) %></span>
+  </div>
+</section>
+
+<!-- Watchlist -->
+<section class="section">
+  <div class="section-header">
+    <h2>🔍 Watchlist</h2>
+    <a href="/watchlist" class="btn-sm">Manage</a>
+  </div>
+  <% if (watchlist.length === 0) { %>
+    <p class="empty-msg">No tickers in watchlist. <a href="/watchlist">Add some.</a></p>
+  <% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Ticker</th><th>Price</th><th>Change</th><th>Volume</th><th>Action</th></tr></thead>
+      <tbody>
+        <% watchlist.forEach(item => {
+           const q = watchlistQuotes[item.ticker] || {};
+        %>
+        <tr>
+          <td><a href="/market/stock/<%= item.ticker %>"><strong><%= item.ticker %></strong></a></td>
+          <td><%= q.price ? q.price.toLocaleString('en-IN', {maximumFractionDigits:2}) : '—' %></td>
+          <td class="<%= (q.change_pct || 0) >= 0 ? 'up' : 'down' %>">
+            <%= q.change_pct ? (q.change_pct > 0 ? '▲' : '▼') + Math.abs(q.change_pct).toFixed(2) + '%' : '—' %>
+          </td>
+          <td><%= q.volume ? q.volume.toLocaleString() : '—' %></td>
+          <td><a href="/recommendations/analyze/<%= item.ticker %>" class="btn-sm">Analyze</a></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</section>
+
+<!-- Notifications -->
+<section class="section">
+  <h2>🔔 Recent Notifications</h2>
+  <% if (notifications.length === 0) { %>
+    <p class="empty-msg">No notifications.</p>
+  <% } else { %>
+    <ul class="notif-list">
+      <% notifications.slice(0,5).forEach(n => { %>
+        <li class="notif-item severity-<%= n.severity %>">
+          <strong><%= n.title %></strong> — <%= n.body %>
+          <span class="notif-time"><%= n.created_at ? new Date(n.created_at).toLocaleString() : '' %></span>
+        </li>
+      <% }); %>
+    </ul>
+  <% } %>
+</section>
+
+<script>
+// Auto-refresh indices every 15 seconds
+setInterval(async () => {
+  const r = await fetch('/api/indices');
+  const data = await r.json();
+  // Could update DOM here — kept simple
+}, 15000);
+</script>
+<%- include('partials/footer') %>

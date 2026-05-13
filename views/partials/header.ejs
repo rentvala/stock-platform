@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="<%= user ? user.theme || 'light' : 'light' %>">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title><%= typeof title !== 'undefined' ? title + ' — Stock Analyst Pro' : 'Stock Analyst Pro' %></title>
+<link rel="stylesheet" href="/css/style.css" />
+<link rel="preconnect" href="https://s3.tradingview.com">
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<% if (user) { %>
+<nav class="topnav">
+  <div class="brand"><span class="logo">📈</span> Stock Analyst Pro</div>
+  <div class="links">
+    <a href="/">Dashboard</a>
+    <div class="dropdown">
+      <span>Markets ▾</span>
+      <div class="dropdown-content">
+        <a href="/market?market=US">🇺🇸 USA (NASDAQ)</a>
+        <a href="/market?market=NSE">🇮🇳 NSE (India)</a>
+        <a href="/market?market=MCX">🪙 MCX (Commodities)</a>
+        <a href="/market?market=CRYPTO">₿ Crypto</a>
+      </div>
+    </div>
+    <a href="/recommendations/best-picks">🎯 Best Picks</a>
+    <a href="/recommendations?status=OPEN">📊 Recs</a>
+    <a href="/paper-trade">🎮 Paper Trade</a>
+    <a href="/api/self-audit">🧠 Self Audit</a>
+    <a href="/media">📰 Media</a>
+    <a href="/alerts">🔔 Alerts</a>
+    <a href="/reports">📑 Reports</a>
+  </div>
+  <div class="actions">
+    <button id="themeToggle" title="Toggle dark/light">🌓</button>
+    <div class="notif-bell" id="notifBell">
+      🔔<span id="notifCount" class="badge"></span>
+      <div class="notif-dropdown" id="notifDropdown"></div>
+    </div>
+    <span class="user">👤 <%= user.username %></span>
+    <form action="/logout" method="POST" style="display:inline">
+      <button type="submit" class="btn-logout">Logout</button>
+    </form>
+  </div>
+</nav>
+<% } %>
+
+<% if (typeof flash_messages !== 'undefined') { %>
+  <% if (flash_messages.error && flash_messages.error.length) { %>
+    <div class="flash-container">
+      <% flash_messages.error.forEach(msg => { %><div class="flash error"><%= msg %></div><% }); %>
+    </div>
+  <% } %>
+  <% if (flash_messages.success && flash_messages.success.length) { %>
+    <div class="flash-container">
+      <% flash_messages.success.forEach(msg => { %><div class="flash success"><%= msg %></div><% }); %>
+    </div>
+  <% } %>
+<% } %>
+
+<div id="popupModal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="popupTitle"></h3>
+    <p id="popupBody"></p>
+    <div class="modal-actions">
+      <button id="popupOk" class="btn-primary">OK</button>
+      <button id="popupSnooze" class="btn-secondary">Snooze 30 min</button>
+    </div>
+  </div>
+</div>
+
+<main class="container">

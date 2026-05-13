@@ -1,0 +1,60 @@
+<%- include('partials/header') %>
+<div class="page-header">
+  <h1>📋 Recommendations</h1>
+  <div class="btn-group">
+    <a href="/recommendations/best-picks?market=NSE" class="btn-primary">🇮🇳 NSE Picks</a>
+    <a href="/recommendations/best-picks?market=US" class="btn-primary">🇺🇸 US Picks</a>
+    <a href="/recommendations/best-picks?market=CRYPTO" class="btn-primary">₿ Crypto Picks</a>
+  </div>
+  <div class="filter-tabs">
+    <a href="/recommendations" class="<%= !status ? 'active' : '' %>">All</a>
+    <a href="/recommendations?status=OPEN" class="<%= status === 'OPEN' ? 'active' : '' %>">Open</a>
+    <a href="/recommendations?status=CLOSED" class="<%= status === 'CLOSED' ? 'active' : '' %>">Closed</a>
+  </div>
+</div>
+
+<% if (recs.length === 0) { %>
+  <p class="empty-msg">No recommendations yet. Click <strong>Best Picks</strong> to generate fresh analysis.</p>
+<% } else { %>
+<div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Ticker</th><th>Style</th><th>Side</th><th>Entry</th>
+        <th>T1</th><th>T2</th><th>SL</th><th>R:R</th>
+        <th>Win%</th><th>Score</th><th>Status</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% recs.forEach(rec => { %>
+      <tr>
+        <td><a href="/market/stock/<%= rec.ticker %>"><strong><%= rec.ticker %></strong></a></td>
+        <td><span class="badge"><%= rec.style %></span></td>
+        <td><span class="side-badge <%= rec.side === 'BUY' ? 'buy' : 'sell' %>"><%= rec.side %></span></td>
+        <td>₹<%= (rec.entry || 0).toLocaleString('en-IN', {maximumFractionDigits:2}) %></td>
+        <td class="up">₹<%= (rec.target1 || 0).toLocaleString('en-IN', {maximumFractionDigits:2}) %></td>
+        <td class="up">₹<%= (rec.target2 || 0).toLocaleString('en-IN', {maximumFractionDigits:2}) %></td>
+        <td class="down">₹<%= (rec.stop_loss || 0).toLocaleString('en-IN', {maximumFractionDigits:2}) %></td>
+        <td><%= rec.rr || '—' %></td>
+        <td>
+          <div class="prob-bar">
+            <div class="prob-fill" style="width:<%= rec.win_probability || 50 %>%"></div>
+            <span><%= rec.win_probability || 50 %>%</span>
+          </div>
+        </td>
+        <td><%= rec.score || 0 %></td>
+        <td><span class="status-badge <%= (rec.status || '').toLowerCase() %>"><%= rec.status || 'OPEN' %></span></td>
+        <td>
+          <form method="POST" action="/recommendations/swap" style="display:inline">
+            <input type="hidden" name="rec_id" value="<%= rec.id %>">
+            <input type="hidden" name="new_side" value="<%= rec.side === 'BUY' ? 'SELL' : 'BUY' %>">
+            <button type="submit" class="btn-sm">Swap</button>
+          </form>
+        </td>
+      </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+<%- include('partials/footer') %>
