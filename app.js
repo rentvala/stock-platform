@@ -1,4 +1,8 @@
 'use strict';
+process.on('uncaughtException', (err) => {
+  console.error('CRASH:', err.message, err.stack);
+  process.exit(1);
+});
 /**
  * Smartest Stock Analysis Platform — Node.js / Express edition
  * Entry point — mirrors python app.py
